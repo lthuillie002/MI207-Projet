@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <unistd.h>
+
+#include "utils.h"
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+
+int main(int argc, char *argv[])
+{
+  int pid_pipe0 = 0;
+  char  pipe0_path [11] = "/tmp/chat/0";
+  char buf[50];
+  system("rm -rf /tmp/chat/");
+
+  // Création du dossier pour les pipes
+  // 777 - Tous les droits pour tous
+  exit_if(mkdir("/tmp/chat/", 0777) == -1, "Erreur creation du dossier /tmp/chat/");
+
+  // Création du pipe 0 pour envoyer un message
+  // (666 - Lecture, écriture pour tout le monde
+  exit_if(mkfifo(pipe0_path, 0666) == -1, "mkfifo");
+
+  pid_pipe0 = open(pipe0_path, O_RDONLY);
+
+  while(1) {
+    read(pid_pipe0, buf, sizeof(buf));
+    printf("%d]> recu, %s \n", getpid(), buf);
+  }
+
+  close(pid_pipe0);
+
+
+  return EXIT_SUCCESS;
+}
